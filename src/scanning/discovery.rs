@@ -6,6 +6,12 @@ use std::{
 };
 use std::net::Ipv4Addr;
 
+#[derive(Debug)]
+pub struct PS4 {
+    ip: Ipv4Addr,
+    response: String
+}
+
 pub fn find_interfaces() -> Vec<Interface> {
 
     // Ignore loopback, obvious virtual interfaces and interfaces w/o ipv4
@@ -23,19 +29,20 @@ pub fn find_interfaces() -> Vec<Interface> {
 }
 
 // Read https://www.psdevwiki.com/ps4/PlayStation_4_Discovery_and_Wake-up_Utility
-pub fn discover_ps4s() -> io::Result<Vec<String>> {
+pub fn discover_ps4s() -> io::Result<Vec<PS4>> {
     let interfaces = find_interfaces();
 
     let message =
         "SRCH * HTTP/1.1\n\
         device-discovery-protocol-version:00020020\n";
 
-    let mut ps4s = Vec::new();
+    let mut ps4s:Vec<PS4> = Vec::new();
 
     for interface in interfaces {
         for ipv4 in interface.ipv4 {
             let local_ip:Ipv4Addr = ipv4.addr;
             let broadcast_ip:Ipv4Addr = ipv4.broadcast();
+            println!("{}", ipv4);
 
             let socket = UdpSocket::bind((local_ip, 0))?;
 
@@ -55,7 +62,10 @@ pub fn discover_ps4s() -> io::Result<Vec<String>> {
                             String::from_utf8_lossy(&buffer[..size]).to_string();
 
                         if response.contains("host-type:PS4") {
-                            ps4s.push(response);
+                            ps4s.push(PS4 {
+                                ip: local_ip,
+                                response,
+                            });
                         }
                     }
 
