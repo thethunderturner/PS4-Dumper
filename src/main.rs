@@ -7,5 +7,8 @@ fn main() {
     let ps4s = discover_ps4s()
         .expect("Scanning failed!");
 
-    println!("{:#?}", ps4s);
+    // Take the first ps4
+    let ps4 = &ps4s[0];
+    let ip = ps4.ip;
+    println!("{:#?}", ps4);
 }
