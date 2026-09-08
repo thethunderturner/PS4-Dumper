@@ -3,6 +3,8 @@ use std::io;
 use std::net::{SocketAddr, UdpSocket};
 
 pub fn find_interfaces() -> Vec<Interface> {
+
+    // Ignore loopback, obvious virtual interfaces and interfaces w/o ipv4
     default_net::get_interfaces()
         .into_iter()
         .filter(|interface| {
