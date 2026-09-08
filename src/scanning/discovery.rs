@@ -4,6 +4,7 @@ use std::{
     net::{SocketAddr, UdpSocket},
     time::Duration,
 };
+use std::net::Ipv4Addr;
 
 pub fn find_interfaces() -> Vec<Interface> {
 
@@ -22,66 +23,54 @@ pub fn find_interfaces() -> Vec<Interface> {
 }
 
 // Read https://www.psdevwiki.com/ps4/PlayStation_4_Discovery_and_Wake-up_Utility
-pub fn discover_ps4s() -> io::Result<()> {
+pub fn discover_ps4s() -> io::Result<Vec<String>> {
     let interfaces = find_interfaces();
 
     let message =
         "SRCH * HTTP/1.1\n\
         device-discovery-protocol-version:00020020\n";
 
+    let mut ps4s = Vec::new();
+
     for interface in interfaces {
         for ipv4 in interface.ipv4 {
-            let local_ip = ipv4.addr;
-            let broadcast_ip = ipv4.broadcast();
-
-            println!(
-                "Scanning {}: {} -> {}:987",
-                interface.name,
-                local_ip,
-                broadcast_ip
-            );
+            let local_ip:Ipv4Addr = ipv4.addr;
+            let broadcast_ip:Ipv4Addr = ipv4.broadcast();
 
             let socket = UdpSocket::bind((local_ip, 0))?;
 
             socket.set_broadcast(true)?;
+            socket.set_read_timeout(Some(Duration::from_secs(2)))?;
 
-            socket.set_read_timeout(Some(
-                Duration::from_secs(2)
-            ))?;
+            let destination = SocketAddr::from((broadcast_ip, 987));
 
-            let destination =
-                SocketAddr::from((broadcast_ip, 987));
-
-            socket.send_to(
-                message.as_bytes(),
-                destination,
-            )?;
+            socket.send_to(message.as_bytes(), destination)?;
 
             let mut buffer = [0u8; 2048];
 
-            match socket.recv_from(&mut buffer) {
-                Ok((size, sender)) => {
-                    let response =
-                        String::from_utf8_lossy(&buffer[..size]);
+            loop {
+                match socket.recv_from(&mut buffer) {
+                    Ok((size, _sender)) => {
+                        let response =
+                            String::from_utf8_lossy(&buffer[..size]).to_string();
 
-                    println!("Response from {sender}:");
-                    println!("{response}");
-                }
-
-                Err(error)
-                if error.kind() == io::ErrorKind::WouldBlock
-                    || error.kind() == io::ErrorKind::TimedOut =>
-                    {
-                        println!(
-                            "No response on {}",
-                            interface.name
-                        );
+                        if response.contains("host-type:PS4") {
+                            ps4s.push(response);
+                        }
                     }
 
-                Err(error) => return Err(error),
+                    Err(error)
+                    if error.kind() == io::ErrorKind::WouldBlock
+                        || error.kind() == io::ErrorKind::TimedOut =>
+                        {
+                            break;
+                        }
+
+                    Err(error) => return Err(error),
+                }
             }
         }
     }
 
-    Ok(())
+    Ok(ps4s)
 }
