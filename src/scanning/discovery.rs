@@ -1,6 +1,9 @@
 use default_net::Interface;
-use std::io;
-use std::net::{SocketAddr, UdpSocket};
+use std::{
+    io,
+    net::{SocketAddr, UdpSocket},
+    time::Duration,
+};
 
 pub fn find_interfaces() -> Vec<Interface> {
 
@@ -42,10 +45,41 @@ pub fn discover_ps4s() -> io::Result<()> {
 
             socket.set_broadcast(true)?;
 
+            socket.set_read_timeout(Some(
+                Duration::from_secs(2)
+            ))?;
+
+            let destination =
+                SocketAddr::from((broadcast_ip, 987));
+
             socket.send_to(
                 message.as_bytes(),
-                SocketAddr::from((broadcast_ip, 987)),
+                destination,
             )?;
+
+            let mut buffer = [0u8; 2048];
+
+            match socket.recv_from(&mut buffer) {
+                Ok((size, sender)) => {
+                    let response =
+                        String::from_utf8_lossy(&buffer[..size]);
+
+                    println!("Response from {sender}:");
+                    println!("{response}");
+                }
+
+                Err(error)
+                if error.kind() == io::ErrorKind::WouldBlock
+                    || error.kind() == io::ErrorKind::TimedOut =>
+                    {
+                        println!(
+                            "No response on {}",
+                            interface.name
+                        );
+                    }
+
+                Err(error) => return Err(error),
+            }
         }
     }
 
