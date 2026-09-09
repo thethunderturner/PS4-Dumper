@@ -11,6 +11,9 @@ pub fn connect(ip: Ipv4Addr, port: u16) -> FtpResult<FtpStream> {
     match FtpStream::connect_timeout(address, Duration::from_secs(5)) {
         Ok(mut ftp) => {
             println!("Connected successfully!");
+            if let Some(message) = ftp.get_welcome_msg() {
+                println!("{message}");
+            }
             ftp.login("", "")?; // Can take empty params
             Ok(ftp)
         }
