@@ -1,5 +1,4 @@
 use crate::ftp::connect::connect;
-use crate::ftp::list::{list_all, list_libraries};
 use crate::scanning::discovery::discover_ps4s;
 
 mod ftp;
@@ -19,16 +18,14 @@ fn main() {
         // Start TCP
         let mut ftp = connect(first.ip, 2121).expect("Couldn't connect");
 
-        let entries = list_all(&mut ftp);
-        let libs = list_libraries(&mut ftp);
+        let entries = ftp::list::root(&mut ftp);
+        let libs = ftp::list::libraries(&mut ftp, true);
 
-        for entry in entries {
-            println!("{entry}");
-        }
-
-        for lib in libs {
-            println!("{lib}");
-        }
+        ftp::download::file(
+            &mut ftp,
+            &*libs[5],
+            ".",
+        ).expect("Download failed");
 
         ftp.quit().expect("Couldn't close FTP connection");
     }
