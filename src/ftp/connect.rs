@@ -7,10 +7,7 @@ pub fn connect(ip: Ipv4Addr, port: u16) {
 
     println!("Connecting to FTP at {address}...");
 
-    match TcpStream::connect_timeout(
-        &address,
-        Duration::from_secs(5),
-    ) {
+    match TcpStream::connect_timeout(&address, Duration::from_secs(5)) {
         Ok(stream) => {
             println!("Connected successfully!");
 
@@ -22,9 +19,7 @@ pub fn connect(ip: Ipv4Addr, port: u16) {
         }
 
         Err(error) => {
-            println!(
-                "Could not connect to {address} within 5 seconds: {error}"
-            );
+            println!("Could not connect to {address} within 5 seconds: {error}");
         }
     }
 }
