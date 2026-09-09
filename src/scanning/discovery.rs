@@ -41,7 +41,7 @@ fn get_header(response: &str, name: &str) -> Option<String> {
     })
 }
 
-fn parse_ps4(response: &str, ip: Ipv4Addr) -> Option<PS4> {
+fn parse_sony_device(response: &str, ip: Ipv4Addr) -> Option<PS4> {
     Some(PS4 {
         ip,
         host_id: get_header(response, "host-id")?,
@@ -50,10 +50,8 @@ fn parse_ps4(response: &str, ip: Ipv4Addr) -> Option<PS4> {
         host_request_port: get_header(response, "host-request-port")?
             .parse()
             .ok()?,
-        device_discovery_protocol_version:
-        get_header(response, "device-discovery-protocol-version")?,
-        system_version:
-        get_header(response, "system-version")?,
+        device_discovery_protocol_version: get_header(response, "device-discovery-protocol-version")?,
+        system_version: get_header(response, "system-version")?,
     })
 }
 
@@ -97,7 +95,7 @@ pub fn discover_ps4s() -> io::Result<Vec<PS4>> {
 
                         if let IpAddr::V4(ip) = sender.ip() {
                             if let Some(ps4) =
-                                parse_ps4(&response, ip)
+                                parse_sony_device(&response, ip)
                             {
                                 if ps4.host_type == "PS4" {
                                     ps4s.push(ps4);
