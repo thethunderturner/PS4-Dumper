@@ -6,7 +6,7 @@ use std::{
 };
 
 #[derive(Debug)]
-#[allow(dead_code)]
+#[allow(dead_code)] // Some fields won't be used, i keep them anyway to maintain proper structure
 pub struct PS4 {
     pub ip: Ipv4Addr,                              // e.g. 10.42.0.1
     pub host_id: String,                           // e.g. 20C6711DH141
