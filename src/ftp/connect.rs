@@ -1,6 +1,5 @@
 use std::net::{Ipv4Addr, Shutdown, SocketAddr, TcpStream};
 use std::time::Duration;
-use suppaftp::{FtpResult, FtpStream};
 
 pub fn connect(ip: Ipv4Addr, port: u16) {
     let address = SocketAddr::from((ip, port));
