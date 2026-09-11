@@ -1,5 +1,4 @@
 use crate::ftp::connect::connect;
-use crate::ftp::list::game;
 use crate::scanning::discovery::discover_ps4s;
 
 mod ftp;
@@ -20,17 +19,18 @@ fn main() {
         let mut ftp = connect(first.ip, 2121)
             .expect("Couldn't connect");
 
-        match game(&mut ftp, false) {
-            Ok(Some(title_id)) => {
-                println!("Running game: {title_id}");
+        match ftp::list::title(&mut ftp) {
+            Ok(Some(title)) => {
+                println!("Running title:");
+                println!("{:#?}", title);
             }
 
             Ok(None) => {
-                println!("No running game detected.");
+                println!("No running title detected.");
             }
 
             Err(error) => {
-                println!("Couldn't detect running game: {error}");
+                println!("Couldn't detect running title: {error}");
             }
         }
     }
