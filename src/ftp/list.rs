@@ -1,4 +1,5 @@
-use suppaftp::FtpStream;
+use std::path::Path;
+use suppaftp::{FtpResult, FtpStream};
 
 pub fn root(ftp: &mut FtpStream) -> Vec<String> {
     ftp
@@ -36,4 +37,44 @@ pub fn trophy(ftp: &mut FtpStream) {
 // TODO: Return contents of custom directory
 pub fn custom(ftp: &mut FtpStream, full: bool) {
     return;
+}
+
+pub fn game(
+    ftp: &mut FtpStream,
+    full: bool,
+) -> FtpResult<Option<String>> {
+    let path = "/mnt/sandbox/pfsmnt/";
+
+    let entries = ftp.nlst(Some(path))?;
+
+    for entry in entries {
+        let name = Path::new(&entry)
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or(&entry);
+
+        if let Some(title_id) = name.strip_suffix("-app0") {
+            if is_title_id(title_id) {
+                return if full {
+                    Ok(Some(format!("{path}{name}")))
+                } else {
+                    Ok(Some(title_id.to_string()))
+                }
+            }
+        }
+    }
+
+    Ok(None)
+}
+
+fn is_title_id(value: &str) -> bool {
+    value.len() == 9
+        && value
+        .chars()
+        .take(4)
+        .all(|c| c.is_ascii_uppercase())
+        && value
+        .chars()
+        .skip(4)
+        .all(|c| c.is_ascii_digit())
 }

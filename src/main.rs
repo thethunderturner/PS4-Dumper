@@ -1,6 +1,5 @@
-use crate::ftp::targets::RemoteDirectory;
 use crate::ftp::connect::connect;
-use crate::ftp::download::directory;
+use crate::ftp::list::game;
 use crate::scanning::discovery::discover_ps4s;
 
 mod ftp;
@@ -18,12 +17,21 @@ fn main() {
         println!("Selecting: \n {:#?}", first);
 
         // Start TCP
-        let mut ftp = connect(first.ip, 2121).expect("Couldn't connect");
-        let libraries = directory(
-            &mut ftp,
-            &RemoteDirectory::Libraries,
-            true,
-        );
-        println!("{:?}", libraries)
+        let mut ftp = connect(first.ip, 2121)
+            .expect("Couldn't connect");
+
+        match game(&mut ftp, false) {
+            Ok(Some(title_id)) => {
+                println!("Running game: {title_id}");
+            }
+
+            Ok(None) => {
+                println!("No running game detected.");
+            }
+
+            Err(error) => {
+                println!("Couldn't detect running game: {error}");
+            }
+        }
     }
 }
