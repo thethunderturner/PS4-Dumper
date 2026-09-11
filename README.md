@@ -20,6 +20,7 @@ Phase 2
 2. dump base game
 3. dump patch
 4. dump DLC
+5. After the program selects the PS4, check if its jailbroken. If it isn't, display a message and quit.
 
 Phase 3
 1. progress / cancellation / resume
