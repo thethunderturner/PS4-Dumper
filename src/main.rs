@@ -3,6 +3,7 @@ use crate::scanning::discovery::discover_ps4s;
 
 mod ftp;
 mod scanning;
+pub mod title;
 
 fn main() {
     let ps4s = discover_ps4s().expect("Scanning failed!");
@@ -19,18 +20,17 @@ fn main() {
         let mut ftp = connect(first.ip, 2121)
             .expect("Couldn't connect");
 
-        match ftp::list::title(&mut ftp) {
-            Ok(Some(title)) => {
+        let title = title::detect::current(&mut ftp)
+            .expect("Couldn't detect running title");
+
+        match title {
+            Some(title) => {
                 println!("Running title:");
-                println!("{:#?}", title);
+                println!("{title:#?}");
             }
 
-            Ok(None) => {
-                println!("No running title detected.");
-            }
-
-            Err(error) => {
-                println!("Couldn't detect running title: {error}");
+            None => {
+                println!("No running title found.");
             }
         }
     }

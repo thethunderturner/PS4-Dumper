@@ -5,22 +5,22 @@ WIP
 A rough idea of the structrure
 
 Phase 1
-1. PS4 discovery
-2. FTP connection
-3. list filesystem
-4. download one file
-5. download directory recursively
+1. [x] PS4 discovery
+2. [x] FTP connection
+3. [x] list filesystem
+4. [x] download one file
+5. [x] download directory recursively
 
 Phase 2
 1. detect currently running game
-   1. Detect app
-   2. Detect Patch
-   3. Detect DLC
-   4. Detect if its a remaster (i think remasters are titles like netflix, where the patch is embedded within the app. So there is no patch folder per se.)
-2. dump base game
-3. dump patch
-4. dump DLC
-5. After the program selects the PS4, check if its jailbroken. If it isn't, display a message and quit.
+   1. [x] Detect app
+   2. [x] Detect Patch
+   3. [x] Detect DLC
+   4. [ ] Detect if its a remaster (i think remasters are titles like netflix, where the patch is embedded within the app. So there is no patch folder per se.)
+2. [ ] dump base game
+3. [ ] dump patch
+4. [ ] dump DLC
+5. [ ] After the program selects the PS4, check if its jailbroken. If it isn't, display a message and quit.
 
 Phase 3
 1. progress / cancellation / resume
