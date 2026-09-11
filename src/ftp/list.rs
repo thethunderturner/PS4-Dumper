@@ -6,7 +6,6 @@ pub fn root(ftp: &mut FtpStream) -> Vec<String> {
         .expect("Couldn't list directory")
 }
 
-// TODO: List libraries
 pub fn libraries(ftp: &mut FtpStream, full: bool) -> Vec<String> {
     let path = "/system/common/lib/";
 
@@ -31,5 +30,10 @@ pub fn fonts(ftp: &mut FtpStream) {
 
 // TODO: List trophy
 pub fn trophy(ftp: &mut FtpStream) {
+    return;
+}
+
+// TODO: Return contents of custom directory
+pub fn custom(ftp: &mut FtpStream, full: bool) {
     return;
 }

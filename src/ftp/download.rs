@@ -1,15 +1,12 @@
-use std::{
-    fs::File,
-    io,
-    path::Path,
-};
+use std::{fs::File, io, path::Path};
 
 use suppaftp::{FtpError, FtpResult, FtpStream};
+use crate::ftp::targets::RemoteDirectory;
 
 pub fn file(
     ftp: &mut FtpStream,
     remote_path: &str,
-    local_directory: &str,
+    local_directory: &Path,
 ) -> FtpResult<()> {
     let filename = Path::new(remote_path)
         .file_name()
@@ -22,8 +19,7 @@ pub fn file(
             )
         })?;
 
-    let local_path =
-        Path::new(local_directory).join(filename);
+    let local_path = local_directory.join(filename);
 
     ftp.retr(remote_path, |stream| {
         let mut file =
@@ -33,9 +29,37 @@ pub fn file(
         io::copy(stream, &mut file)
             .map_err(FtpError::ConnectionError)?;
 
-        Ok(println!("Downloaded file: {:?}", filename))
-    })
+        Ok(())
+    })?;
+
+    println!("Downloaded: {}", remote_path);
+
+    Ok(())
 }
-pub fn directory() {
-    return;
+
+pub fn directory(
+    ftp: &mut FtpStream,
+    directory: &RemoteDirectory,
+    full: bool,
+) -> FtpResult<Vec<String>> {
+    let path = directory.path();
+
+    let files = ftp.nlst(Some(path))?;
+
+    if full {
+        Ok(
+            files
+                .into_iter()
+                .map(|file| {
+                    format!(
+                        "{}/{}",
+                        path.trim_end_matches('/'),
+                        file
+                    )
+                })
+                .collect()
+        )
+    } else {
+        Ok(files)
+    }
 }

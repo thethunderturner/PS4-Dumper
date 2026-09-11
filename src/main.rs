@@ -1,4 +1,6 @@
+use crate::ftp::targets::RemoteDirectory;
 use crate::ftp::connect::connect;
+use crate::ftp::download::directory;
 use crate::scanning::discovery::discover_ps4s;
 
 mod ftp;
@@ -17,16 +19,11 @@ fn main() {
 
         // Start TCP
         let mut ftp = connect(first.ip, 2121).expect("Couldn't connect");
-
-        let entries = ftp::list::root(&mut ftp);
-        let libs = ftp::list::libraries(&mut ftp, true);
-
-        ftp::download::file(
+        let libraries = directory(
             &mut ftp,
-            &*libs[5],
-            ".",
-        ).expect("Download failed");
-
-        ftp.quit().expect("Couldn't close FTP connection");
+            &RemoteDirectory::Libraries,
+            true,
+        );
+        println!("{:?}", libraries)
     }
 }
