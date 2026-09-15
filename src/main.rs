@@ -17,7 +17,15 @@ fn main() {
         println!("Selecting: \n {:#?}", first);
 
         // Start TCP
-        let mut ftp = connect(first.ip, 2121).expect("Couldn't connect");
+        let mut ftp = match connect(first.ip, 2121) {
+            Ok(ftp) => ftp,
+
+            Err(error) => {
+                println!("Could not connect to FTP: {error}");
+                println!("Make sure GoldHEN FTP is enabled.");
+                return;
+            }
+        };
 
         let _title = title::detect::current(&mut ftp);
     }
