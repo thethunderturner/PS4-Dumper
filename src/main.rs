@@ -17,21 +17,8 @@ fn main() {
         println!("Selecting: \n {:#?}", first);
 
         // Start TCP
-        let mut ftp = connect(first.ip, 2121)
-            .expect("Couldn't connect");
+        let mut ftp = connect(first.ip, 2121).expect("Couldn't connect");
 
-        let title = title::detect::current(&mut ftp)
-            .expect("Couldn't detect running title");
-
-        match title {
-            Some(title) => {
-                println!("Running title:");
-                println!("{title:#?}");
-            }
-
-            None => {
-                println!("No running title found.");
-            }
-        }
+        let _title = title::detect::current(&mut ftp);
     }
 }

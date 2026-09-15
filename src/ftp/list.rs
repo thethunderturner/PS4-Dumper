@@ -1,30 +1,14 @@
-use std::path::Path;
-use suppaftp::{FtpResult, FtpStream};
-
-#[derive(Debug)]
-pub struct Title {
-    pub title_id: String,
-    pub name: Option<String>,
-    pub version: Option<String>,
-    pub category: Option<String>,
-
-    pub app_path: String,
-    pub patch_path: Option<String>,
-    pub union_path: Option<String>,
-}
+use suppaftp::FtpStream;
+use crate::ftp::targets::RemoteDirectory;
 
 pub fn root(ftp: &mut FtpStream) -> Vec<String> {
-    ftp
-        .nlst(Some("/"))
-        .expect("Couldn't list directory")
+    ftp.nlst(Some("/")).expect("Couldn't list directory")
 }
 
 pub fn libraries(ftp: &mut FtpStream, full: bool) -> Vec<String> {
-    let path = "/system/common/lib/";
+    let path = RemoteDirectory::path(&RemoteDirectory::Libraries);
 
-    let files = ftp
-        .nlst(Some(path))
-        .expect("Couldn't list directory");
+    let files = ftp.nlst(Some(path)).expect("Couldn't list directory");
 
     if full {
         files
@@ -37,16 +21,16 @@ pub fn libraries(ftp: &mut FtpStream, full: bool) -> Vec<String> {
 }
 
 // TODO: List fonts
-pub fn fonts(ftp: &mut FtpStream) {
+pub fn fonts(_ftp: &mut FtpStream) {
     return;
 }
 
 // TODO: List trophy
-pub fn trophy(ftp: &mut FtpStream) {
+pub fn trophy(_ftp: &mut FtpStream) {
     return;
 }
 
 // TODO: Return contents of custom directory
-pub fn custom(ftp: &mut FtpStream, full: bool) {
+pub fn custom(_ftp: &mut FtpStream, _full: bool) {
     return;
 }
