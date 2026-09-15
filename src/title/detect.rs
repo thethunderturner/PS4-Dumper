@@ -15,7 +15,6 @@ pub fn current(ftp: &mut FtpStream) {
     let title_ids = find_title_id(&mounts);
     for title_id in title_ids {
         let app = find_app(&mounts, &title_id).expect("Could not find app");
-
         let patch = find_patch(&mounts, &title_id);
 
         titles.push(Title {
