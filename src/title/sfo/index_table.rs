@@ -27,7 +27,7 @@ pub struct SfoIndexEntry {
 
 #[derive(Debug)]
 pub struct SfoIndexTable {
-    entries: Vec<SfoIndexEntry>,
+    pub entries: Vec<SfoIndexEntry>,
 }
 
 impl fmt::Debug for SfoIndexEntry {
