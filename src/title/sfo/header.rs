@@ -1,8 +1,6 @@
 use std::fmt;
-use std::fs::File;
-use std::io::Read;
 
-// Read: https://www.psdevwiki.com/ps4/Param.sfo
+// Read: https://www.psdevwiki.com/ps4/Param.sfo#Header_SFO
 pub struct SfoHeader {
     pub magic: [u8; 4],
     pub version: u32,
@@ -27,18 +25,6 @@ impl fmt::Debug for SfoHeader {
             .field("index_table_entries", &self.index_table_entries)
             .finish()
     }
-}
-
-pub fn read_sfo() -> std::io::Result<()> {
-    let mut f = File::open("tmp/param.sfo")?;
-    let mut header_buffer = [0u8; 20];
-
-    // Read header
-    f.read_exact(&mut header_buffer)?;
-    let header = read_header(&header_buffer);
-
-    println!("{:#?}", header);
-    Ok(())
 }
 
 pub fn read_header(buffer: &[u8; 20]) -> SfoHeader {
