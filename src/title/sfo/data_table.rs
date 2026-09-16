@@ -47,6 +47,32 @@ pub struct SfoDataTable {
     pub params: Vec<SfoDataParam>,
 }
 
+impl SfoDataTable {
+    // Returns the raw typed value of the given SFO parameter.
+    pub fn find_param(&self, key: &str) -> Option<&SfoValue> {
+        self.params
+            .iter()
+            .find(|param| param.key == key)
+            .map(|param| &param.data)
+    }
+
+    // Returns a UTF-8 parameter as a String.
+    pub fn find_string(&self, key: &str) -> Option<String> {
+        match self.find_param(key)? {
+            SfoValue::Utf8(value) => Some(value.clone()),
+            _ => None,
+        }
+    }
+
+    // Returns an integer parameter as a u32.
+    pub fn find_integer(&self, key: &str) -> Option<u32> {
+        match self.find_param(key)? {
+            SfoValue::Integer(value) => Some(*value),
+            _ => None,
+        }
+    }
+}
+
 impl fmt::Debug for SfoValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

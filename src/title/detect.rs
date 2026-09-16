@@ -32,13 +32,11 @@ pub fn current(ftp: &mut FtpStream) -> Vec<Title> {
                 continue;
             }
         };
-        println!("SFO for {title_id}:");
-        println!("{:#?}", sfo.data_table);
 
         titles.push(Title {
             title_id,
-            name: None,
-            version: None,
+            name: sfo.data_table.find_string("TITLE"),
+            version: sfo.data_table.find_string("VERSION"),
             app,
             patch,
             app_union,

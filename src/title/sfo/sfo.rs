@@ -2,8 +2,7 @@ use crate::title::sfo::data_table::{SfoDataTable, read_data_table};
 use crate::title::sfo::header::{SfoHeader, read_header};
 use crate::title::sfo::index_table::{SfoIndexTable, read_index};
 use crate::title::sfo::key_table::{SfoKeyTable, read_key_table};
-use std::fs::File;
-use std::io::{Cursor, Error, ErrorKind};
+use std::io::{Cursor, Error};
 use suppaftp::FtpStream;
 use suppaftp::types::FileType;
 
