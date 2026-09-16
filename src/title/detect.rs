@@ -4,12 +4,15 @@ use crate::title::patch::find_patch;
 use suppaftp::FtpStream;
 
 pub const PFSMNT_PATH: &str = "/mnt/sandbox/pfsmnt";
-pub fn current(ftp: &mut FtpStream) {
+pub fn current(ftp: &mut FtpStream) -> Vec<Title> {
     let mut titles: Vec<Title> = Vec::new();
 
     let mounts = match ftp.nlst(Some(PFSMNT_PATH)) {
         Ok(mounts) => mounts,
-        Err(_) => todo!(),
+        Err(error) => {
+            println!("Could not read mounted titles: {error}");
+            return titles;
+        }
     };
 
     let title_ids = find_title_id(&mounts);
@@ -28,5 +31,5 @@ pub fn current(ftp: &mut FtpStream) {
         });
     }
 
-    println!("{titles:#?}");
+    titles
 }

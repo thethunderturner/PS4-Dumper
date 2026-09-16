@@ -52,10 +52,10 @@ impl fmt::Debug for SfoValue {
         match self {
             SfoValue::Utf8(value) => {
                 write!(f, "{:?}", value)
-            },
+            }
             SfoValue::Integer(value) => {
                 write!(f, "{}", value)
-            },
+            }
             SfoValue::Raw(value) => {
                 write!(f, "0x")?;
 
