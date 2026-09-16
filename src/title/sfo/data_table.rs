@@ -1,3 +1,8 @@
+use crate::title::sfo::index_table::SfoIndexTable;
+use crate::title::sfo::key_table::SfoKeyTable;
+use std::fmt;
+use std::io::{Error, ErrorKind, Read};
+
 // Read: https://www.psdevwiki.com/ps4/Param.sfo#Data_table
 /*
    From the index table we know:
@@ -23,10 +28,6 @@
         key_offset 0x0: APP_TYPE
         data_offset 0x0: to be found
 */
-use crate::title::sfo::index_table::SfoIndexTable;
-use crate::title::sfo::key_table::SfoKeyTable;
-use std::fmt;
-use std::io::{Error, ErrorKind, Read};
 
 pub enum SfoValue {
     Utf8(String),
@@ -51,12 +52,10 @@ impl fmt::Debug for SfoValue {
         match self {
             SfoValue::Utf8(value) => {
                 write!(f, "{:?}", value)
-            }
-
+            },
             SfoValue::Integer(value) => {
                 write!(f, "{}", value)
-            }
-
+            },
             SfoValue::Raw(value) => {
                 write!(f, "0x")?;
 

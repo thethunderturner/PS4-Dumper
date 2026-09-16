@@ -2,9 +2,7 @@ use crate::title::sfo::data_table::read_data_table;
 use crate::title::sfo::header::read_header;
 use crate::title::sfo::index_table::read_index;
 use crate::title::sfo::key_table::read_key_table;
-use std::fmt;
 use std::fs::File;
-use std::io::Read;
 
 // Read: https://www.psdevwiki.com/ps4/Param.sfo
 /*

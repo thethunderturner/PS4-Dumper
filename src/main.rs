@@ -1,5 +1,3 @@
-use crate::ftp::connect::connect;
-use crate::scanning::discovery::discover_ps4s;
 
 mod ftp;
 mod scanning;
