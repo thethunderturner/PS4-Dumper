@@ -2,6 +2,7 @@ use crate::title::Title;
 use crate::title::app::{find_app, find_title_id};
 use crate::title::app_union::find_app_union;
 use crate::title::patch::find_patch;
+use crate::title::sfo::sfo::read_sfo;
 use suppaftp::FtpStream;
 
 pub const PFSMNT_PATH: &str = "/mnt/sandbox/pfsmnt";
@@ -22,11 +23,22 @@ pub fn current(ftp: &mut FtpStream) -> Vec<Title> {
         let patch = find_patch(&mounts, &title_id);
         let app_union = find_app_union(&mounts, &title_id);
 
+        let sfo = match read_sfo(ftp, &title_id) {
+            Ok(sfo) => sfo,
+
+            Err(error) => {
+                println!("Could not read param.sfo for {}: {}", title_id, error);
+
+                continue;
+            }
+        };
+        println!("SFO for {title_id}:");
+        println!("{:#?}", sfo.data_table);
+
         titles.push(Title {
             title_id,
             name: None,
             version: None,
-            category: None,
             app,
             patch,
             app_union,

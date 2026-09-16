@@ -15,7 +15,6 @@ pub struct Title {
     pub title_id: String,
     pub name: Option<String>,
     pub version: Option<String>,
-    pub category: Option<String>,
     pub app: App,
     pub patch: Option<Patch>,
     pub app_union: Option<AppUnion>,
