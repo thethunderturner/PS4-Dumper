@@ -17,8 +17,8 @@ Phase 2
    2. [x] Detect Patch
    3. [x] Detect DLC
    4. [x] Parse param.sfo
-2. [ ] dump base game
-3. [ ] dump patch
+2. [x] dump base app
+3. [x] dump patch
 4. [ ] dump DLC
 5. [ ] After the program selects the PS4, check if its jailbroken. If it isn't, display a message and quit.
 
