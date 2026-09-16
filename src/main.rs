@@ -1,5 +1,7 @@
 use crate::ftp::connect::connect;
+use crate::ftp::download;
 use crate::scanning::discovery::discover_ps4s;
+use std::path::Path;
 
 mod ftp;
 mod scanning;
@@ -39,6 +41,14 @@ fn main() {
 
     println!("{} title(s) detected:", titles.len());
     println!("{titles:#?}");
+
+    let first = &titles[0];
+    download::directory(
+        &mut ftp,
+        &first.app.path,
+        Path::new("/home/mateo/Desktop/Projects/PS4-Dumper/dump"),
+    )
+    .expect("TODO: panic message");
 
     // SFO stuff
     // let _bytes = title::sfo::sfo::read_sfo();
