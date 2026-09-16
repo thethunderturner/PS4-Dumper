@@ -1,5 +1,6 @@
 use crate::title::Title;
 use crate::title::app::{find_app, find_title_id};
+use crate::title::app_union::find_app_union;
 use crate::title::patch::find_patch;
 use suppaftp::FtpStream;
 
@@ -19,6 +20,7 @@ pub fn current(ftp: &mut FtpStream) -> Vec<Title> {
     for title_id in title_ids {
         let app = find_app(&mounts, &title_id).expect("Could not find app");
         let patch = find_patch(&mounts, &title_id);
+        let app_union = find_app_union(&mounts, &title_id);
 
         titles.push(Title {
             title_id,
@@ -27,6 +29,7 @@ pub fn current(ftp: &mut FtpStream) -> Vec<Title> {
             category: None,
             app,
             patch,
+            app_union,
             dlcs: Vec::new(),
         });
     }
