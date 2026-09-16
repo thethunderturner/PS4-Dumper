@@ -1,4 +1,5 @@
 use std::fmt;
+use std::io::Read;
 
 // Read: https://www.psdevwiki.com/ps4/Param.sfo#Header_SFO
 pub struct SfoHeader {
@@ -27,12 +28,17 @@ impl fmt::Debug for SfoHeader {
     }
 }
 
-pub fn read_header(buffer: &[u8; 20]) -> SfoHeader {
-    SfoHeader {
+pub fn read_header<R: Read>(reader: &mut R) -> std::io::Result<SfoHeader> {
+    let mut buffer = [0u8; 20];
+    reader.read_exact(&mut buffer)?;
+
+    let header = SfoHeader {
         magic: buffer[0..4].try_into().unwrap(),
         version: u32::from_le_bytes(buffer[4..8].try_into().unwrap()),
         key_table_offset: u32::from_le_bytes(buffer[8..12].try_into().unwrap()),
         data_table_offset: u32::from_le_bytes(buffer[12..16].try_into().unwrap()),
         index_table_entries: u32::from_le_bytes(buffer[16..20].try_into().unwrap()),
-    }
+    };
+
+    Ok(header)
 }

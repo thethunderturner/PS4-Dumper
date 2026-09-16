@@ -1,4 +1,5 @@
 use crate::title::sfo::header::read_header;
+use crate::title::sfo::index_table::read_index;
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
@@ -17,12 +18,14 @@ use std::io::Read;
 */
 pub fn read_sfo() -> std::io::Result<()> {
     let mut f = File::open("tmp/param-fifa15.sfo")?;
-    let mut header_buffer = [0u8; 20];
 
     // Read header
-    f.read_exact(&mut header_buffer)?;
-    let header = read_header(&header_buffer);
-
+    let header = read_header(&mut f);
     println!("{:#?}", header);
+
+    // Read index table
+    let index_table = read_index(&mut f, header.unwrap().index_table_entries)?;
+    println!("{:#?}", index_table);
+
     Ok(())
 }

@@ -28,6 +28,8 @@ fn main() {
         };
 
         let _title = title::detect::current(&mut ftp);
-        let _bytes = title::sfo::sfo::read_sfo();
     }
+
+    // sfo stuff
+    let _bytes = title::sfo::sfo::read_sfo();
 }
