@@ -4,13 +4,7 @@ use std::io::Read;
 // Read: https://www.psdevwiki.com/ps4/Param.sfo#Index_table
 /*
    Example: Printing the header gives you something like:
-   SfoHeader {
-       magic: "PSF",
-       version: 0x00000101,
-       key_table_offset: 0x174,
-       data_table_offset: 0x2CC,
-       index_table_entries: 22,
-   }
+   In the SfoHeader, we have the "index_table_entries" field.
    Each index entry is 0x10 bytes = 16 bytes, and it repeats index_table_entries times
    So the index table occupies:
        start = 0x14

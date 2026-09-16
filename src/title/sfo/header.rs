@@ -2,12 +2,22 @@ use std::fmt;
 use std::io::Read;
 
 // Read: https://www.psdevwiki.com/ps4/Param.sfo#Header_SFO
+/*
+   Example:
+      SfoHeader {
+          magic: "PSF",
+          version: 0x00000101,
+          key_table_offset: 0x174,
+          data_table_offset: 0x2CC,
+          index_table_entries: 22,
+      }
+*/
 pub struct SfoHeader {
-    pub magic: [u8; 4],
-    pub version: u32,
-    pub key_table_offset: u32,
-    pub data_table_offset: u32,
-    pub index_table_entries: u32,
+    pub magic: [u8; 4],           // PSF
+    pub version: u32,             // Version of the game
+    pub key_table_offset: u32,    // Tells you where the key table starts
+    pub data_table_offset: u32,   // Tells you where the data table starts
+    pub index_table_entries: u32, // Tells you where the index table starts
 }
 
 impl fmt::Debug for SfoHeader {
