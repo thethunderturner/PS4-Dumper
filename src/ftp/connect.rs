@@ -18,6 +18,6 @@ pub fn connect(ip: Ipv4Addr, port: u16) -> FtpResult<FtpStream> {
             Ok(ftp)
         }
 
-        Err(error) => Err(error)
+        Err(error) => Err(error),
     }
 }

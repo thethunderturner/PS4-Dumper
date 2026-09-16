@@ -1,5 +1,5 @@
-use suppaftp::FtpStream;
 use crate::ftp::targets::RemoteDirectory;
+use suppaftp::FtpStream;
 
 pub fn root(ftp: &mut FtpStream) -> Vec<String> {
     ftp.nlst(Some("/")).expect("Couldn't list directory")
