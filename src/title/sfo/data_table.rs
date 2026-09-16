@@ -1,1 +1,193 @@
+// Read: https://www.psdevwiki.com/ps4/Param.sfo#Data_table
+/*
+   From the index table we know:
+       key_offset: Where the key is
+       data_offset: Where the value of the key is
+   Example:
+       SfoIndexEntry {
+           key_offset: 0x0,
+           param_fmt: 0x0404,
+           param_len: 4,
+           param_max_len: 4,
+           data_offset: 0x0,
+       },
+       SfoKeyTable {
+           params: [
+               SfoKeyParam {
+                   key: APP_TYPE,
+                   offset: 0x0,
+               },
+               ...
+           ]
+        }
+        key_offset 0x0: APP_TYPE
+        data_offset 0x0: to be found
+*/
+use crate::title::sfo::index_table::SfoIndexTable;
+use crate::title::sfo::key_table::SfoKeyTable;
+use std::fmt;
+use std::io::{Error, ErrorKind, Read};
 
+pub enum SfoValue {
+    Utf8(String),
+    Integer(u32),
+    Raw(Vec<u8>),
+}
+
+pub struct SfoDataParam {
+    pub key: String,
+    pub value: SfoValue,
+}
+
+pub struct SfoDataTable {
+    pub params: Vec<SfoDataParam>,
+}
+
+impl fmt::Debug for SfoValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SfoValue::Utf8(value) => {
+                write!(f, "{:?}", value)
+            }
+
+            SfoValue::Integer(value) => {
+                write!(f, "{}", value)
+            }
+
+            SfoValue::Raw(value) => {
+                write!(f, "0x")?;
+
+                for byte in value {
+                    write!(f, "{:02X}", byte)?;
+                }
+
+                Ok(())
+            }
+        }
+    }
+}
+
+impl fmt::Debug for SfoDataParam {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SfoDataParam")
+            .field("key", &format_args!("{}", self.key))
+            .field("value", &self.value)
+            .finish()
+    }
+}
+
+impl fmt::Debug for SfoDataTable {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SfoDataTable")
+            .field("params", &self.params)
+            .finish()
+    }
+}
+
+pub fn read_data_table<R: Read>(
+    reader: &mut R,
+    index_table: &SfoIndexTable,
+    key_table: &SfoKeyTable,
+) -> std::io::Result<SfoDataTable> {
+    /*
+        Work out the complete size of the data table.
+        For every entry:
+            data_offset + param_max_len
+        This will tell us where that entry's reserved data area ends.
+        The largest one therefore gives us the size of the table.
+    */
+    let table_size = index_table
+        .entries
+        .iter()
+        .map(|entry| entry.data_offset as usize + entry.param_max_len as usize)
+        .max()
+        .unwrap_or(0);
+
+    let mut data = vec![0u8; table_size];
+    reader.read_exact(&mut data)?;
+
+    let mut params = Vec::with_capacity(index_table.entries.len());
+
+    for entry in &index_table.entries {
+        // Resolve the key
+        let key = key_table
+            .get_key(entry.key_offset)
+            .ok_or_else(|| {
+                Error::new(
+                    ErrorKind::InvalidData,
+                    format!("Invalid key offset: {:#X}", entry.key_offset),
+                )
+            })?
+            .to_string();
+
+        // data_offset is relative to the beginning of the data table.
+        let start = entry.data_offset as usize;
+        let end = start + entry.param_len as usize;
+
+        if end > data.len() {
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                format!("Data for '{}' exceeds the data table", key),
+            ));
+        }
+
+        let raw_value = &data[start..end];
+
+        let value = match entry.param_fmt {
+            /*
+                UTF-8 special mode.
+                    It is still UTF-8 data. The wiki identifies this as a special mode used by system-generated content.
+            */
+            0x0004 => {
+                let bytes = raw_value.strip_suffix(&[0]).unwrap_or(raw_value);
+
+                let value = std::str::from_utf8(bytes)
+                    .map_err(|_| {
+                        Error::new(
+                            ErrorKind::InvalidData,
+                            format!("Invalid UTF-8 value for '{}'", key),
+                        )
+                    })?
+                    .to_string();
+
+                SfoValue::Utf8(value)
+            }
+
+            // Normal UTF-8 string. param_len includes the terminating null byte.
+            0x0204 => {
+                let bytes = raw_value.strip_suffix(&[0]).unwrap_or(raw_value);
+
+                let value = std::str::from_utf8(bytes)
+                    .map_err(|_| {
+                        Error::new(
+                            ErrorKind::InvalidData,
+                            format!("Invalid UTF-8 value for '{}'", key),
+                        )
+                    })?
+                    .to_string();
+
+                SfoValue::Utf8(value)
+            }
+
+            // Unsigned 32-bit integer.
+            0x0404 => {
+                if raw_value.len() != 4 {
+                    return Err(Error::new(
+                        ErrorKind::InvalidData,
+                        format!("Integer '{}' has invalid length {}", key, raw_value.len()),
+                    ));
+                }
+
+                let bytes: [u8; 4] = raw_value.try_into().unwrap();
+                SfoValue::Integer(u32::from_le_bytes(bytes))
+            }
+
+            // Unknown format. Keep the bytes instead of throwing them away.
+            _ => SfoValue::Raw(raw_value.to_vec()),
+        };
+
+        params.push(SfoDataParam { key, value });
+    }
+
+    Ok(SfoDataTable { params })
+}

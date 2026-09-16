@@ -1,3 +1,4 @@
+use crate::title::sfo::data_table::read_data_table;
 use crate::title::sfo::header::read_header;
 use crate::title::sfo::index_table::read_index;
 use crate::title::sfo::key_table::read_key_table;
@@ -31,6 +32,9 @@ pub fn read_sfo() -> std::io::Result<()> {
     // Read key table
     let key_table = read_key_table(&mut f, header.key_table_offset, header.data_table_offset)?;
     println!("{:#?}", key_table);
+
+    let data_table = read_data_table(&mut f, &index_table, &key_table)?;
+    println!("{:#?}", data_table);
 
     Ok(())
 }
