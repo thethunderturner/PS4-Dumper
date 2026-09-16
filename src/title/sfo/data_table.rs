@@ -36,7 +36,10 @@ pub enum SfoValue {
 
 pub struct SfoDataParam {
     pub key: String,
-    pub value: SfoValue,
+    pub data: SfoValue,
+    pub key_offset: u16,
+    pub data_offset: u32,
+    pub param_fmt: u16,
 }
 
 pub struct SfoDataTable {
@@ -71,7 +74,10 @@ impl fmt::Debug for SfoDataParam {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SfoDataParam")
             .field("key", &format_args!("{}", self.key))
-            .field("value", &self.value)
+            .field("data", &self.data)
+            .field("key_offset", &format_args!("{:#X}", self.key_offset))
+            .field("data_offset", &format_args!("{:#X}", self.data_offset))
+            .field("param_fmt", &format_args!("{:#06X}", self.param_fmt))
             .finish()
     }
 }
@@ -109,7 +115,7 @@ pub fn read_data_table<R: Read>(
     let mut params = Vec::with_capacity(index_table.entries.len());
 
     for entry in &index_table.entries {
-        // Resolve the key
+        // Resolve key_offset -> actual key
         let key = key_table
             .get_key(entry.key_offset)
             .ok_or_else(|| {
@@ -131,62 +137,67 @@ pub fn read_data_table<R: Read>(
             ));
         }
 
-        let raw_value = &data[start..end];
-
-        let value = match entry.param_fmt {
+        let raw_data = &data[start..end];
+        let data = match entry.param_fmt {
             /*
                 UTF-8 special mode.
                     It is still UTF-8 data. The wiki identifies this as a special mode used by system-generated content.
             */
             0x0004 => {
-                let bytes = raw_value.strip_suffix(&[0]).unwrap_or(raw_value);
+                let bytes = raw_data.strip_suffix(&[0]).unwrap_or(raw_data);
 
-                let value = std::str::from_utf8(bytes)
+                let string = std::str::from_utf8(bytes)
                     .map_err(|_| {
                         Error::new(
                             ErrorKind::InvalidData,
-                            format!("Invalid UTF-8 value for '{}'", key),
+                            format!("Invalid UTF-8 data for '{}'", key),
                         )
                     })?
                     .to_string();
 
-                SfoValue::Utf8(value)
+                SfoValue::Utf8(string)
             }
 
             // Normal UTF-8 string. param_len includes the terminating null byte.
             0x0204 => {
-                let bytes = raw_value.strip_suffix(&[0]).unwrap_or(raw_value);
+                let bytes = raw_data.strip_suffix(&[0]).unwrap_or(raw_data);
 
-                let value = std::str::from_utf8(bytes)
+                let string = std::str::from_utf8(bytes)
                     .map_err(|_| {
                         Error::new(
                             ErrorKind::InvalidData,
-                            format!("Invalid UTF-8 value for '{}'", key),
+                            format!("Invalid UTF-8 data for '{}'", key),
                         )
                     })?
                     .to_string();
 
-                SfoValue::Utf8(value)
+                SfoValue::Utf8(string)
             }
 
             // Unsigned 32-bit integer.
             0x0404 => {
-                if raw_value.len() != 4 {
+                if raw_data.len() != 4 {
                     return Err(Error::new(
                         ErrorKind::InvalidData,
-                        format!("Integer '{}' has invalid length {}", key, raw_value.len()),
+                        format!("Integer '{}' has invalid length {}", key, raw_data.len()),
                     ));
                 }
 
-                let bytes: [u8; 4] = raw_value.try_into().unwrap();
+                let bytes: [u8; 4] = raw_data.try_into().unwrap();
                 SfoValue::Integer(u32::from_le_bytes(bytes))
             }
 
             // Unknown format. Keep the bytes instead of throwing them away.
-            _ => SfoValue::Raw(raw_value.to_vec()),
+            _ => SfoValue::Raw(raw_data.to_vec()),
         };
 
-        params.push(SfoDataParam { key, value });
+        params.push(SfoDataParam {
+            key,
+            key_offset: entry.key_offset,
+            data_offset: entry.data_offset,
+            param_fmt: entry.param_fmt,
+            data,
+        });
     }
 
     Ok(SfoDataTable { params })

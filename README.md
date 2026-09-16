@@ -17,6 +17,7 @@ Phase 2
    2. [x] Detect Patch
    3. [x] Detect DLC
    4. [ ] Detect if its a remaster (i think remasters are titles like netflix, where the patch is embedded within the app. So there is no patch folder per se.)
+   5. [x] Parse param.sfo
 2. [ ] dump base game
 3. [ ] dump patch
 4. [ ] dump DLC
